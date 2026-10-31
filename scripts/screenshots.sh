@@ -12,10 +12,21 @@ BUNDLE_ID="${BUNDLE_ID:-de.lernwiese.app}"
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b
+# German system language, so the iPad status bar shows a German date; needs a reboot to take effect.
+xcrun simctl spawn "$UDID" defaults write -g AppleLanguages -array de
+xcrun simctl spawn "$UDID" defaults write -g AppleLocale -string de_DE
+xcrun simctl shutdown "$UDID"
+xcrun simctl boot "$UDID"
+xcrun simctl bootstatus "$UDID" -b
 xcrun simctl ui "$UDID" appearance light
 xcrun simctl status_bar "$UDID" override --time "9:41" --dataNetwork wifi --wifiMode active --wifiBars 3 \
   --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
 xcrun simctl install "$UDID" "$APP"
+
+# The first launch after installing can take a while; warm up so no screenshot shows the launch screen.
+xcrun simctl launch "$UDID" "$BUNDLE_ID" -demo YES -screen home
+sleep 25
+xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
 
 shoot() {
   local name="$1"
@@ -25,6 +36,17 @@ shoot() {
   xcrun simctl launch "$UDID" "$BUNDLE_ID" -demo YES -AppleLanguages "(de)" -AppleLocale de_DE "$@"
   sleep 12
   xcrun simctl io "$UDID" screenshot "$file"
+  # A plain launch screen compresses to ~130 KB, a real screen to well over 500 KB: wait and retake.
+  local attempt=1
+  while [ "$(stat -f%z "$file")" -lt 400000 ]; do
+    if [ "$attempt" -ge 5 ]; then
+      echo "::error::Screenshot $name zeigt nur den Startbildschirm"
+      exit 1
+    fi
+    attempt=$((attempt + 1))
+    sleep 10
+    xcrun simctl io "$UDID" screenshot "$file"
+  done
   # The 13" iPad slot in App Store Connect takes 2048x2732; the iPad Pro 13" Simulator renders 2064x2752.
   if [ "$(sips -g pixelWidth "$file" | awk '/pixelWidth/ {print $2}')" = "2064" ]; then
     sips -z 2732 2048 "$file" >/dev/null

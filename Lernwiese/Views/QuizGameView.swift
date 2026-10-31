@@ -483,10 +483,10 @@ struct EquationStage: View {
     }
 
     private func cluster(_ count: Int, width: CGFloat, height: CGFloat) -> some View {
-        EmojiCluster(emoji: picture.emoji, count: count, columns: 3,
+        EmojiCluster(emoji: picture.emoji, count: count, columns: count <= 6 ? 2 : 3,
                      size: CGSize(width: width - 24, height: height - 24))
             .padding(12)
-            .frame(width: width, height: height)
+            .frame(width: width)
             .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Color.white.opacity(0.75)))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(count) \(picture.name)")

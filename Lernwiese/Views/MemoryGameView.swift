@@ -93,8 +93,9 @@ struct MemoryGameView: View {
             let rows = (count + columns - 1) / columns
             let width = (size.width - spacing * CGFloat(columns - 1)) / CGFloat(columns)
             let height = (size.height - spacing * CGFloat(rows - 1)) / CGFloat(rows)
-            let cardWidth = min(width, height * aspect, 220)
-            if cardWidth > best.card.width {
+            let cardWidth = min(width, height * aspect, 260)
+            // On a tie prefer more columns: fewer rows look calmer on wide screens.
+            if cardWidth >= best.card.width {
                 best = (columns, CGSize(width: cardWidth, height: cardWidth / aspect))
             }
         }

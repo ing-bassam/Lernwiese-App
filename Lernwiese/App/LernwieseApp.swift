@@ -4,6 +4,7 @@ import SwiftUI
 struct LernwieseApp: App {
     @StateObject private var progress = ProgressStore.shared
     @StateObject private var settings = AppSettings.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         DemoContent.prepareIfNeeded()
@@ -16,6 +17,12 @@ struct LernwieseApp: App {
                 .environmentObject(progress)
                 .environmentObject(settings)
                 .preferredColorScheme(.light)
+        }
+        .onChange(of: scenePhase) { phase in
+            // Parents may have downloaded a more natural voice in the iOS settings.
+            if phase == .active {
+                Speaker.shared.refreshVoices()
+            }
         }
     }
 }

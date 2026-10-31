@@ -84,8 +84,12 @@ final class SettingsTests: XCTestCase {
         XCTAssertTrue(settings.speechEnabled)
         XCTAssertFalse(settings.slowSpeech)
         XCTAssertTrue(settings.hapticsEnabled)
+        XCTAssertEqual(settings.voiceIdentifier, "", "the most natural voice is picked automatically")
         settings.speechEnabled = false
-        XCTAssertFalse(AppSettings(defaults: UserDefaults(suiteName: suite)!).speechEnabled)
+        settings.voiceIdentifier = "com.apple.voice.premium.de-DE.Anna"
+        let reloaded = AppSettings(defaults: UserDefaults(suiteName: suite)!)
+        XCTAssertFalse(reloaded.speechEnabled)
+        XCTAssertEqual(reloaded.voiceIdentifier, "com.apple.voice.premium.de-DE.Anna")
         UserDefaults().removePersistentDomain(forName: suite)
     }
 }

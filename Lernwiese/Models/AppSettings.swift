@@ -8,6 +8,7 @@ final class AppSettings: ObservableObject {
         static let speech = "speechEnabled"
         static let slowSpeech = "slowSpeech"
         static let haptics = "hapticsEnabled"
+        static let voice = "voiceIdentifier"
     }
 
     @Published var speechEnabled: Bool {
@@ -22,6 +23,11 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(hapticsEnabled, forKey: Key.haptics) }
     }
 
+    /// Chosen voice; empty means "pick the most natural one automatically".
+    @Published var voiceIdentifier: String {
+        didSet { defaults.set(voiceIdentifier, forKey: Key.voice) }
+    }
+
     /// Screenshot mode: never speaks or vibrates.
     var isDemo = false
 
@@ -33,5 +39,6 @@ final class AppSettings: ObservableObject {
         speechEnabled = defaults.bool(forKey: Key.speech)
         slowSpeech = defaults.bool(forKey: Key.slowSpeech)
         hapticsEnabled = defaults.bool(forKey: Key.haptics)
+        voiceIdentifier = defaults.string(forKey: Key.voice) ?? ""
     }
 }

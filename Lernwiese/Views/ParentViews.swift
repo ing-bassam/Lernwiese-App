@@ -130,18 +130,31 @@ struct ParentAreaView: View {
     @EnvironmentObject private var progress: ProgressStore
     @Environment(\.dismiss) private var dismiss
     @State private var confirmingReset = false
+    @State private var voices = Speaker.shared.germanVoices()
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     Toggle("Aufgaben vorlesen", isOn: $settings.speechEnabled)
+                    Picker("Stimme", selection: $settings.voiceIdentifier) {
+                        Text("Automatisch – die natürlichste").tag("")
+                        ForEach(voices) { voice in
+                            Text(voice.label).tag(voice.identifier)
+                        }
+                    }
+                    .disabled(!settings.speechEnabled)
                     Toggle("Langsamer sprechen", isOn: $settings.slowSpeech)
                         .disabled(!settings.speechEnabled)
+                    Button {
+                        Speaker.shared.preview()
+                    } label: {
+                        Label("Stimme probehören", systemImage: "play.circle.fill")
+                    }
                 } header: {
                     Text("Vorlesen")
                 } footer: {
-                    Text("Die Sprachausgabe ist in iOS eingebaut und läuft vollständig auf dem Gerät.")
+                    Text(voiceFooter)
                 }
 
                 Section("Rückmeldung") {
@@ -191,6 +204,12 @@ struct ParentAreaView: View {
                 Text("Alle Spiele beginnen dann wieder auf der leichtesten Stufe.")
             }
         }
+    }
+
+    private var voiceFooter: String {
+        let onDevice = "Die Sprachausgabe ist in iOS eingebaut und läuft vollständig auf dem Gerät."
+        guard VoiceChooser.onlyStandardVoices(in: voices) else { return onDevice }
+        return "Tipp für eine besonders sanfte, natürliche Stimme: Lade kostenlos eine Premium-Stimme unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch, z. B. „Anna (Premium)“. Lernwiese nutzt sie danach automatisch. " + onDevice
     }
 
     private var appVersion: String {

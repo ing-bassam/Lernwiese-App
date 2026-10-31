@@ -17,7 +17,7 @@ NATUR
 • Was kommt danach? Vom Ei zum Huhn, von der Kastanie zum Baum, vom Morgen bis zur Nacht.
 
 GEMACHT FÜR KLEINE HÄNDE
-• Große Tasten, wenig Text, alles wird vorgelesen
+• Große Tasten, wenig Text, alles wird mit ruhiger, sanfter Stimme vorgelesen – die natürlichste deutsche Stimme auf dem Gerät wird automatisch gewählt
 • Kein Zeitdruck und keine Strafen: Falsche Antworten werden nur ausgegraut, das Kind probiert einfach weiter
 • Nach jeder richtigen Antwort gibt es Sterne, Lob und einen kleinen Satz zum Lernen
 • Für jedes beendete Spiel gibt es einen Stern. Mit den Sternen werden die Aufgaben Schritt für Schritt etwas schwieriger
@@ -29,4 +29,4 @@ SICHER FÜR KINDER
 • Kein Mikrofon, keine Kamera
 • Einstellungen und Links sind durch eine Rechenaufgabe für Erwachsene geschützt
 
-Im Eltern-Bereich lassen sich das Vorlesen, die Sprechgeschwindigkeit und die Vibration einstellen und der Fortschritt zurücksetzen.
+Im Eltern-Bereich lassen sich das Vorlesen, die Stimme, die Sprechgeschwindigkeit und die Vibration einstellen und der Fortschritt zurücksetzen.

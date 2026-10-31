@@ -1,0 +1,72 @@
+# XcodeGen-Projektbeschreibung. Das .xcodeproj wird in der CI mit `xcodegen generate` erzeugt.
+name: Lernwiese
+options:
+  bundleIdPrefix: de.lernwiese
+  developmentLanguage: de
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  Lernwiese:
+    type: application
+    platform: iOS
+    sources:
+      - path: Lernwiese
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: Lernwiese
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        LSApplicationCategoryType: public.app-category.education
+        ITSAppUsesNonExemptEncryption: false
+        UIUserInterfaceStyle: Light
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.lernwiese.app
+        PRODUCT_NAME: Lernwiese
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+    scheme:
+      testTargets:
+        - LernwieseTests
+
+  LernwieseTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: LernwieseTests
+    dependencies:
+      - target: Lernwiese
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: de.lernwiese.app.tests
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic

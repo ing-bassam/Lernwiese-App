@@ -1,0 +1,84 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "fastlane/**", "**.md", "scripts/setup_apple_key.command"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  device:
+    name: Release-Build für iPhone & iPad (unsigniert)
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Werkzeuge
+        run: |
+          brew install xcodegen
+          command -v xcbeautify || brew install xcbeautify
+          xcodegen generate
+      - name: Archivieren
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project Lernwiese.xcodeproj -scheme Lernwiese -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Lernwiese.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | xcbeautify
+          du -sh build/Lernwiese.xcarchive/Products/Applications/Lernwiese.app
+
+  test:
+    name: Unit-Tests & Screenshots (Simulator)
+    runs-on: macos-26
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Werkzeuge
+        run: |
+          xcodebuild -version
+          brew install xcodegen
+          command -v xcbeautify || brew install xcbeautify
+          xcodegen generate
+
+      - name: Simulatoren wählen
+        id: sim
+        run: |
+          IPHONE=$(xcrun simctl list devices available -j | python3 scripts/pick_simulator.py iphone)
+          IPAD=$(xcrun simctl list devices available -j | python3 scripts/pick_simulator.py ipad)
+          echo "iphone=$IPHONE" >> "$GITHUB_OUTPUT"
+          echo "ipad=$IPAD" >> "$GITHUB_OUTPUT"
+          xcrun simctl list devices | grep -E "$IPHONE|$IPAD"
+
+      - name: Tests
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild test \
+            -project Lernwiese.xcodeproj -scheme Lernwiese \
+            -destination "id=${{ steps.sim.outputs.iphone }}" \
+            -derivedDataPath build/DerivedData \
+            -resultBundlePath build/Tests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build/test.log | xcbeautify
+
+      - name: Screenshots
+        if: success()
+        run: |
+          APP=$(find build/DerivedData/Build/Products -name "Lernwiese.app" -path "*iphonesimulator*" | head -1)
+          bash scripts/screenshots.sh "${{ steps.sim.outputs.iphone }}" "$APP" build/screenshots iphone
+          bash scripts/screenshots.sh "${{ steps.sim.outputs.ipad }}" "$APP" build/screenshots ipad
+          sips -g pixelWidth -g pixelHeight build/screenshots/*.png
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            build/test.log
+            build/Tests.xcresult
+            build/screenshots
+          if-no-files-found: ignore

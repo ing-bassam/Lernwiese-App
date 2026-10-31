@@ -1,0 +1,5 @@
+Lernwiese is a German learning app for children aged 4 to 8 (Kids Category). It needs no account, makes no network connections, contains no ads, no in-app purchases, no analytics and collects no data. All instructions are read aloud on the device with AVSpeechSynthesizer (German system voice); there is no microphone or camera use.
+
+To test: tap any game tile on the home screen, e.g. "Zählen" (counting), "Wo wohnt das Tier?" (animal homes) or "Futter-Paare" (find each animal and its food). Wrong answers are only greyed out; every finished game earns a star.
+
+Parental gate: the only links out of the app (privacy policy and support page) and the settings are in the parents' area behind the lock button "Eltern" (top right of the home screen). It asks for a multiplication with a two-digit number, e.g. "14 × 7 = ?" - enter the result (98) on the number pad and tap OK. A wrong answer shows a new task.

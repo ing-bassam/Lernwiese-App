@@ -24,7 +24,7 @@ struct TimeNoticeModifier: ViewModifier {
     @State private var shownFor: String?
     @State private var visibleMinutes: Int?
 
-    func body(content: Content) -> some View {
+    func body(content: _ViewModifier_Content<Self>) -> some View {
         ZStack(alignment: .top) {
             content
             banner

@@ -128,6 +128,7 @@ struct ParentGateView: View {
 struct ParentAreaView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var progress: ProgressStore
+    @ObservedObject private var playTime = PlayTimeStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var confirmingReset = false
     @State private var voices = Speaker.shared.germanVoices()
@@ -135,6 +136,24 @@ struct ParentAreaView: View {
     var body: some View {
         NavigationStack {
             Form {
+                screenTimeSection
+
+                Section {
+                    Toggle("Ruhige Musik", isOn: $settings.musicEnabled)
+                    HStack {
+                        Image(systemName: "speaker.fill").foregroundColor(.secondary)
+                        Slider(value: $settings.musicVolume, in: 0...1)
+                        Image(systemName: "speaker.wave.3.fill").foregroundColor(.secondary)
+                    }
+                    .disabled(!settings.musicEnabled)
+                    .accessibilityLabel("Lautstärke der Musik")
+                    Toggle("Sanfte Klänge bei Antworten", isOn: $settings.soundsEnabled)
+                } header: {
+                    Text("Musik und Klänge")
+                } footer: {
+                    Text("Alle Melodien wurden für Lernwiese geschrieben und werden direkt auf dem Gerät erzeugt: langsam, leise und ohne Fanfaren. Beim Vorlesen wird die Musik automatisch leiser.")
+                }
+
                 Section {
                     Toggle("Aufgaben vorlesen", isOn: $settings.speechEnabled)
                     Picker("Stimme", selection: $settings.voiceIdentifier) {
@@ -162,19 +181,38 @@ struct ParentAreaView: View {
                 }
 
                 Section {
+                    ForEach(World.allCases) { world in
+                        ForEach(world.games) { game in
+                            Toggle(isOn: Binding(get: { settings.isVisible(game) },
+                                                 set: { settings.setVisible($0, game) })) {
+                                HStack(spacing: 12) {
+                                    Text(game.emoji).font(.title2)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(game.title)
+                                        Text(game.skill).font(.caption).foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    StarsView(count: progress.stars(for: game), size: 12)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Spiele und Fortschritt")
+                } footer: {
+                    Text("Ausgeschaltete Spiele erscheinen nicht auf der Wiese. Für jedes beendete Spiel gibt es einen Stern, bis zu drei pro Spiel. Mit jedem Stern werden die Aufgaben etwas schwieriger.")
+                }
+
+                Section {
                     LabeledContent("Gesammelte Sterne", value: "\(progress.total) von \(progress.maximum)")
                     Button("Fortschritt zurücksetzen", role: .destructive) {
                         confirmingReset = true
                     }
-                } header: {
-                    Text("Fortschritt")
-                } footer: {
-                    Text("Für jedes beendete Spiel gibt es einen Stern, bis zu drei pro Spiel. Mit jedem Stern werden die Aufgaben etwas schwieriger.")
                 }
 
                 Section("Über Lernwiese") {
-                    Text("Lernwiese ist ein Lernspiel für Kinder von 4 bis 8 Jahren: Zahlen, Tiere und Natur in zehn kleinen Spielen. Es gibt keinen Zeitdruck und keine Strafen.")
-                    Text("Keine Werbung, keine In-App-Käufe, keine Anmeldung und keine Datenerfassung. Die App funktioniert vollständig offline.")
+                    Text("Lernwiese ist ein kostenloses Lernspiel für Kinder von 4 bis 8 Jahren: Zahlen, Tiere, Natur und Knobeln in \(GameID.allCases.count) kleinen Spielen mit dem Igel Pieks. Es gibt keinen Zeitdruck und keine Strafen.")
+                    Text("Keine Werbung, keine In-App-Käufe, keine Anmeldung, keine Cookies, keine Tracker und keine Datenerfassung. Die App funktioniert vollständig offline; Spielzeit und Sterne bleiben nur auf diesem Gerät.")
                 }
 
                 Section("Links") {
@@ -203,7 +241,59 @@ struct ParentAreaView: View {
             } message: {
                 Text("Alle Spiele beginnen dann wieder auf der leichtesten Stufe.")
             }
+            .onChange(of: settings.musicEnabled) { _ in MusicPlayer.shared.settingsChanged() }
+            .onChange(of: settings.musicVolume) { _ in MusicPlayer.shared.settingsChanged() }
         }
+    }
+
+    // MARK: - Screen time
+
+    private var screenTimeSection: some View {
+        Section {
+            LabeledContent("Heute gespielt", value: minutesText(playTime.todaySeconds / 60))
+            if let limit = settings.dailyLimitMinutes {
+                LabeledContent("Heute erlaubt", value: minutesText(limit + playTime.todayExtraMinutes))
+            }
+            PlayTimeChart(history: playTime.history(days: 7), limit: settings.dailyLimitMinutes)
+                .frame(height: 130)
+                .padding(.vertical, 6)
+            Picker("Alter des Kindes", selection: $settings.childAge) {
+                ForEach(ScreenTime.ages, id: \.self) { age in
+                    Text("\(age) Jahre").tag(age)
+                }
+            }
+            Picker("Tägliche Spielzeit", selection: $settings.timeLimitMinutes) {
+                Text("Empfohlen: \(ScreenTime.recommendedMinutes(age: settings.childAge)) Minuten").tag(ScreenTime.automatic)
+                ForEach(ScreenTime.choices, id: \.self) { minutes in
+                    Text("\(minutes) Minuten").tag(minutes)
+                }
+                Text("Kein Limit").tag(ScreenTime.off)
+            }
+            if settings.dailyLimitMinutes != nil {
+                Button {
+                    playTime.allowExtraTime()
+                } label: {
+                    Label("Heute \(ScreenTime.extraMinutes) Minuten mehr erlauben", systemImage: "plus.circle.fill")
+                }
+                Button {
+                    playTime.resetToday()
+                } label: {
+                    Label("Spielzeit von heute zurücksetzen", systemImage: "arrow.counterclockwise")
+                }
+            }
+        } header: {
+            Text("Bildschirmzeit")
+        } footer: {
+            Text("""
+            Kinderärztinnen und Kinderärzte empfehlen für 3- bis 6-Jährige höchstens 30 Minuten und für 6- bis 9-Jährige höchstens 30 bis 45 Minuten Bildschirmzeit, und das nicht jeden Tag – am besten gemeinsam mit Ihnen (Leitlinie AWMF 027-075, 2023). Die WHO rät für 2- bis 4-Jährige zu höchstens einer Stunde, weniger ist besser.
+
+            5 Minuten vor Ende sagt Pieks freundlich Bescheid. Danach erscheint ein Pausen-Bildschirm mit einer Idee für Bewegung oder Spiel ohne Bildschirm. Mehr Zeit gibt es nur über die Rechenaufgabe für Erwachsene. Gezählt wird nur, solange Lernwiese geöffnet ist.
+            """)
+        }
+    }
+
+    private func minutesText(_ minutes: Int) -> String {
+        minutes == 1 ? "1 Minute" : "\(minutes) Minuten"
     }
 
     private var voiceFooter: String {
@@ -217,5 +307,56 @@ struct ParentAreaView: View {
         let version = info?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = info?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
+    }
+}
+
+/// Bars for the minutes played on the last days; the dashed line is the daily limit.
+struct PlayTimeChart: View {
+    let history: [(day: Date, minutes: Int)]
+    let limit: Int?
+
+    private static let weekday: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "de_DE")
+        formatter.setLocalizedDateFormatFromTemplate("EE")
+        return formatter
+    }()
+
+    var body: some View {
+        GeometryReader { geo in
+            let top = max(Double(limit ?? 0), Double(history.map(\.minutes).max() ?? 0), 10) * 1.15
+            let chartHeight = geo.size.height - 22
+            ZStack(alignment: .bottomLeading) {
+                if let limit {
+                    let y = chartHeight * (1 - CGFloat(Double(limit) / top))
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: y))
+                        path.addLine(to: CGPoint(x: geo.size.width, y: y))
+                    }
+                    .stroke(Color.secondary, style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                }
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(history.indices, id: \.self) { index in
+                        let entry = history[index]
+                        let over = limit.map { entry.minutes > $0 } ?? false
+                        VStack(spacing: 4) {
+                            Text("\(entry.minutes)")
+                                .font(.caption2.monospacedDigit())
+                                .foregroundColor(.secondary)
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(over ? Tint.orange.color : Tint.green.color)
+                                .frame(height: max(3, (chartHeight - 16) * CGFloat(Double(entry.minutes) / top)))
+                            Text(Self.weekday.string(from: entry.day))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Spielzeit der letzten sieben Tage: " +
+                            history.map { "\(Self.weekday.string(from: $0.day)) \($0.minutes) Minuten" }.joined(separator: ", "))
     }
 }

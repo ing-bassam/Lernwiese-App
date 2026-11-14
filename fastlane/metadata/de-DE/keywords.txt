@@ -1,1 +1,1 @@
-lernspiel,vorschule,kita,zählen,rechnen,mathe,tierbabys,jahreszeiten,memory,obst,gemüse,offline
+lernspiel,vorschule,kita,zählen,formen,muster,memory,tiere,musik,logik,bildschirmzeit,offline

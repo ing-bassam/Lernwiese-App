@@ -1,19 +1,42 @@
 import AVFoundation
 
 /// Reads tasks and answers aloud with the most natural German voice on the device. Runs entirely on the device.
-final class Speaker {
+final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     static let shared = Speaker()
 
     private let synthesizer = AVSpeechSynthesizer()
     private var automaticVoice: AVSpeechSynthesisVoice?
 
-    init() {
+    override init() {
+        super.init()
+        synthesizer.delegate = self
         refreshVoices()
     }
 
-    /// Spoken instructions are part of the game, so they also play with the silent switch on; music is ducked.
+    // The background music gets quieter while something is read aloud.
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        DispatchQueue.main.async { MusicPlayer.shared.duck(true) }
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        unduckWhenQuiet()
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        unduckWhenQuiet()
+    }
+
+    private func unduckWhenQuiet() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+            guard let self, !self.synthesizer.isSpeaking else { return }
+            MusicPlayer.shared.duck(false)
+        }
+    }
+
+    /// Spoken instructions are part of the game, so they also play with the silent switch on; music from other
+    /// apps is ducked. Lernwiese's own music can be switched off in the parents' area.
     func prepareAudioSession() {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.duckOthers])
     }
 
     /// Looks for the best voice again – parents may have downloaded a premium voice in the meantime.

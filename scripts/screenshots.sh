@@ -59,6 +59,10 @@ shoot 02_zaehlen -screen counting
 shoot 03_tiere -screen habitat -solved YES
 shoot 04_paare -screen foodPairs
 shoot 05_rechnen -screen arithmetic
-shoot 06_jahreszeiten -screen seasons
+shoot 06_formen -screen shapes -solved YES
+shoot 07_muster -screen patterns
+shoot 08_klang -screen echo
+shoot 09_pause -screen rest
+shoot 10_eltern -screen parents
 
 xcrun simctl shutdown "$UDID" 2>/dev/null || true

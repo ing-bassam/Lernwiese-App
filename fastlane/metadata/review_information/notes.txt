@@ -1,5 +1,15 @@
-Lernwiese is a German learning app for children aged 4 to 8 (Kids Category). It needs no account, makes no network connections, contains no ads, no in-app purchases, no analytics and collects no data. All instructions are read aloud on the device with AVSpeechSynthesizer (German system voice); there is no microphone or camera use.
+Lernwiese is a free German learning app for children aged 4 to 8 (Kids Category).
 
-To test: tap any game tile on the home screen, e.g. "Zählen" (counting), "Wo wohnt das Tier?" (animal homes) or "Futter-Paare" (find each animal and its food). Wrong answers are only greyed out; every finished game earns a star.
+Answers to the Guideline 1.3 questions:
+- Third-party analytics: No. The app contains no analytics SDKs and no third-party code at all.
+- Third-party advertising: No. There are no ads of any kind.
+- Data shared with third parties: No. The app collects no data, so nothing is shared or stored outside the device.
+- Other user or device data: No. The app makes no network connections. It only stores the child's stars, the daily play time (for the parental screen-time limit, last 30 days) and the parents' settings locally in UserDefaults; this never leaves the device. No account, no login, no in-app purchases. Our privacy manifest declares no tracking and no collected data.
 
-Parental gate: the only links out of the app (privacy policy and support page) and the settings are in the parents' area behind the lock button "Eltern" (top right of the home screen). It asks for a multiplication with a two-digit number, e.g. "14 × 7 = ?" - enter the result (98) on the number pad and tap OK. A wrong answer shows a new task.
+All instructions are read aloud on the device with AVSpeechSynthesizer. The background music and sounds are synthesized on the device from notes in the code (no audio files, no streaming). No microphone or camera use.
+
+To test: tap any game tile on the home screen, e.g. "Zählen" (counting), "Formen-Garten" (drag things into the matching shape) or "Klang-Echo" (repeat the tones). Wrong answers are only greyed out; every finished game earns a star.
+
+Screen time: by default the app allows 30 minutes per day (age 5, following the German paediatric guideline). Five minutes before the end a friendly notice appears; afterwards a break screen suggests an offline activity. More time can only be granted behind the parental gate.
+
+Parental gate: the only links out of the app (privacy policy and support page) and all settings are in the parents' area behind the lock button "Eltern" (top right of the home screen). It asks for a multiplication with a two-digit number, e.g. "14 × 7 = ?" - enter the result (98) on the number pad and tap OK. A wrong answer shows a new task.

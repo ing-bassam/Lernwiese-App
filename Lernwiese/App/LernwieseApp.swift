@@ -9,11 +9,12 @@ struct LernwieseApp: App {
     init() {
         DemoContent.prepareIfNeeded()
         Speaker.shared.prepareAudioSession()
+        MusicPlayer.shared.prepare()
     }
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            RootView()
                 .environmentObject(progress)
                 .environmentObject(settings)
                 .preferredColorScheme(.light)
@@ -22,6 +23,12 @@ struct LernwieseApp: App {
             // Parents may have downloaded a more natural voice in the iOS settings.
             if phase == .active {
                 Speaker.shared.refreshVoices()
+                MusicPlayer.shared.resume()
+                if !DemoContent.isActive {
+                    PlayTimeStore.shared.startCounting()
+                }
+            } else {
+                PlayTimeStore.shared.stopCounting()
             }
         }
     }

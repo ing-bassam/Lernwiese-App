@@ -23,7 +23,10 @@ enum RoundFactory {
         case .weather: return weather(level: level, using: &rng)
         case .fruitVeg: return fruitVeg(level: level, using: &rng)
         case .growth: return growth(level: level, using: &rng)
-        case .foodPairs: return []
+        case .patterns: return patterns(level: level, using: &rng)
+        case .shadows: return shadows(level: level, using: &rng)
+        case .oddOne: return oddOne(level: level, using: &rng)
+        case .foodPairs, .shapes, .echo: return []
         }
     }
 

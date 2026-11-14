@@ -7,7 +7,7 @@ final class ContentTests: XCTestCase {
         for world in World.allCases {
             XCTAssertFalse(world.games.isEmpty)
         }
-        XCTAssertEqual(GameID.allCases.count, 10)
+        XCTAssertEqual(GameID.allCases.count, 15)
     }
 
     func testAnimalsAreUnique() {

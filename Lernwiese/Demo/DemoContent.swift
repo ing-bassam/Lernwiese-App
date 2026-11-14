@@ -30,7 +30,11 @@ enum DemoContent {
         .counting: 3, .compare: 2, .arithmetic: 1,
         .habitat: 3, .foodPairs: 2, .babies: 1,
         .seasons: 2, .weather: 1, .fruitVeg: 3, .growth: 0,
+        .shapes: 2, .patterns: 1, .shadows: 3, .oddOne: 1, .echo: 0,
     ]
+
+    /// Minutes played on the last seven days, for the chart in the parents' area.
+    static let playMinutes = [18, 25, 0, 30, 22, 12, 9]
 
     static func prepareIfNeeded() {
         guard isActive else { return }
@@ -38,5 +42,6 @@ enum DemoContent {
         for (game, count) in stars {
             ProgressStore.shared.set(count, for: game)
         }
+        PlayTimeStore.shared.fillForDemo(minutesPerDay: playMinutes)
     }
 }

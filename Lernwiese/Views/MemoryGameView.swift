@@ -115,6 +115,7 @@ struct MemoryGameView: View {
             Speaker.shared.say(card.picture.name)
         case .match(let pairID):
             Haptics.success()
+            MusicPlayer.shared.playCorrect()
             burst += 1
             Speaker.shared.say("\(card.picture.name). \(Phrases.randomPraise()) \(deck.facts[pairID])")
             if deck.isComplete {
@@ -125,6 +126,7 @@ struct MemoryGameView: View {
             }
         case .mismatch:
             Haptics.gentle()
+            MusicPlayer.shared.playTryAgain()
             Speaker.shared.say("\(card.picture.name). Das passt nicht zusammen.")
             mismatchToken += 1
             let token = mismatchToken
@@ -139,6 +141,7 @@ struct MemoryGameView: View {
     private func finish() {
         let earned = progress.recordCompletion(of: game)
         withAnimation(.easeOut(duration: 0.25)) { finished = true }
+        MusicPlayer.shared.playFinish()
         Speaker.shared.say(earned ? "Super gemacht! Du hast einen Stern bekommen." : "Super gemacht! Du bist ein echter Profi.",
                            interrupt: false)
     }

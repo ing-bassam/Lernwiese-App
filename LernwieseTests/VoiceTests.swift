@@ -52,7 +52,7 @@ final class VoiceTests: XCTestCase {
         XCTAssertEqual(SpeechStyle.pitch, 1.0)
         XCTAssertLessThan(SpeechStyle.normalRate, 1.0)
         XCTAssertLessThan(SpeechStyle.slowRate, SpeechStyle.normalRate)
-        for game in GameID.allCases where !game.isMemory {
+        for game in GameID.allCases where game.kind == .quiz {
             var rng = SeededGenerator(seed: 5)
             for round in RoundFactory.rounds(for: game, level: 2, using: &rng) {
                 XCTAssertFalse(SpeechStyle.sentences(round.spoken).isEmpty)

@@ -18,6 +18,10 @@ enum Stage: Equatable {
     case count(Picture, plural: String, number: Int)
     case equation(Picture, first: Int, second: Int, isPlus: Bool)
     case sequence([Picture], missing: Int)
+    /// A repeating pattern; the next piece is asked for.
+    case pattern([Picture])
+    /// A black silhouette that turns into the picture once solved.
+    case shadow(Picture)
 }
 
 /// One answer button.

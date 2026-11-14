@@ -124,6 +124,7 @@ struct QuizGameView: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { solved = true }
             burst += 1
             Haptics.success()
+            MusicPlayer.shared.playCorrect()
             Speaker.shared.say("\(Phrases.randomPraise()) \(round.fact)")
         } else {
             wrong.insert(choice)
@@ -131,6 +132,7 @@ struct QuizGameView: View {
                 shakes[choice, default: 0] += 1
             }
             Haptics.gentle()
+            MusicPlayer.shared.playTryAgain()
             Speaker.shared.say(Phrases.randomTryAgain())
         }
     }
@@ -151,6 +153,7 @@ struct QuizGameView: View {
         withAnimation(.easeOut(duration: 0.25)) { finished = true }
         burst += 1
         Haptics.success()
+        MusicPlayer.shared.playFinish()
         Speaker.shared.say(earned ? "Super gemacht! Du hast einen Stern bekommen." : "Super gemacht! Du bist ein echter Profi.")
     }
 }
@@ -343,6 +346,10 @@ struct StageView: View {
             EquationStage(picture: picture, first: first, second: second, isPlus: isPlus, solved: solved, size: size)
         case .sequence(let steps, let missing):
             SequenceStage(steps: steps, missing: missing, solved: solved, size: size)
+        case .pattern(let pieces):
+            PatternStage(pieces: pieces, solved: solved, size: size)
+        case .shadow(let picture):
+            ShadowStage(picture: picture, solved: solved, size: size)
         }
     }
 }
@@ -533,5 +540,77 @@ struct SequenceStage: View {
                 .background(shape.fill(Color.white))
                 .overlay(shape.stroke(index == missing ? Palette.correct : Color.clear, lineWidth: 5))
         }
+    }
+}
+
+/// A row of pieces and an empty box at the end. Wraps into two rows when the screen is narrow.
+struct PatternStage: View {
+    let pieces: [Picture]
+    let solved: Bool
+    let size: CGSize
+
+    var body: some View {
+        let count = pieces.count + 1
+        let oneRow = (size.width - CGFloat(count - 1) * 8) / CGFloat(count)
+        let twoRows = oneRow < 62
+        let perRow = twoRows ? (count + 1) / 2 : count
+        let rows = twoRows ? 2 : 1
+        let box = max(44, min((size.width - CGFloat(perRow - 1) * 8) / CGFloat(perRow),
+                              (size.height - CGFloat(rows - 1) * 10) / CGFloat(rows) * 0.9, 130))
+        VStack(spacing: 10) {
+            ForEach(0..<rows, id: \.self) { row in
+                HStack(spacing: 8) {
+                    ForEach((row * perRow)..<min(count, (row + 1) * perRow), id: \.self) { index in
+                        cell(index, box: box)
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 26, style: .continuous).fill(Color.white.opacity(0.6)))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(pieces.map(\.name).joined(separator: ", ") + ", Fragezeichen")
+    }
+
+    @ViewBuilder private func cell(_ index: Int, box: CGFloat) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 18, style: .continuous)
+        if index < pieces.count {
+            Text(pieces[index].emoji)
+                .font(.system(size: box * 0.6))
+                .frame(width: box, height: box)
+                .background(shape.fill(Color.white))
+        } else {
+            shape
+                .strokeBorder(solved ? Palette.correct : Palette.ink.opacity(0.4),
+                              style: StrokeStyle(lineWidth: 4, dash: solved ? [] : [10, 8]))
+                .background(shape.fill(Color.white.opacity(0.5)))
+                .frame(width: box, height: box)
+                .overlay(Text(solved ? "✓" : "?").font(.rounded(box * 0.5, .heavy))
+                    .foregroundColor(solved ? Palette.correct : Palette.ink.opacity(0.5)))
+        }
+    }
+}
+
+/// The picture as a dark shadow; once solved it fades into its colours.
+struct ShadowStage: View {
+    let picture: Picture
+    let solved: Bool
+    let size: CGSize
+
+    var body: some View {
+        let diameter = max(80, min(size.width * 0.7, size.height * 0.95, 300))
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.85))
+                .shadow(color: .black.opacity(0.08), radius: 6, y: 3)
+            Text(picture.emoji)
+                .font(.system(size: diameter * 0.6))
+                .colorMultiply(solved ? .white : .black)
+                .opacity(solved ? 1 : 0.85)
+                .animation(.easeInOut(duration: 0.6), value: solved)
+        }
+        .frame(width: diameter, height: diameter)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(solved ? picture.name : "Ein Schatten")
     }
 }

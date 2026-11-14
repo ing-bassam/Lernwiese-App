@@ -1,6 +1,34 @@
 import SwiftUI
 
+/// The meadow, with the break screen on top once the daily time is used up.
+struct RootView: View {
+    @EnvironmentObject private var settings: AppSettings
+    @ObservedObject private var playTime = PlayTimeStore.shared
+
+    private var resting: Bool {
+        DemoContent.launchScreen == "rest" || playTime.status(settings: settings) == .over
+    }
+
+    var body: some View {
+        ZStack {
+            HomeView(resting: resting)
+            if resting {
+                RestView()
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
+        }
+        .animation(.easeInOut(duration: 0.6), value: resting)
+        .onChange(of: resting) { isResting in
+            if !isResting {
+                MusicPlayer.shared.setMood(.meadow)
+            }
+        }
+    }
+}
+
 struct HomeView: View {
+    let resting: Bool
     @EnvironmentObject private var progress: ProgressStore
     @EnvironmentObject private var settings: AppSettings
     @State private var activeGame: GameID?
@@ -12,7 +40,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
                     header
-                    ForEach(World.allCases) { world in
+                    ForEach(World.allCases.filter { !visibleGames($0).isEmpty }) { world in
                         worldSection(world)
                     }
                 }
@@ -33,7 +61,21 @@ struct HomeView: View {
                 .environmentObject(progress)
                 .environmentObject(settings)
         }
+        .timeNotice()
+        .onChange(of: resting) { isResting in
+            guard isResting else { return }
+            activeGame = nil
+            showingParents = false
+        }
+        .onChange(of: activeGame) { game in
+            if game == nil && !resting {
+                MusicPlayer.shared.setMood(.meadow)
+            }
+        }
         .onAppear {
+            if !resting {
+                MusicPlayer.shared.setMood(.meadow)
+            }
             if let game = DemoContent.launchGame {
                 activeGame = game
             } else if DemoContent.launchScreen == "parents" {
@@ -44,9 +86,12 @@ struct HomeView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 12) {
+            Mascot(mood: .waving, size: 92)
             VStack(alignment: .leading, spacing: 6) {
                 Text("Lernwiese")
                     .font(.rounded(42, .heavy))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .foregroundColor(Palette.ink)
                     .accessibilityAddTraits(.isHeader)
                 HStack(spacing: 6) {
@@ -80,6 +125,10 @@ struct HomeView: View {
         }
     }
 
+    private func visibleGames(_ world: World) -> [GameID] {
+        world.games.filter(settings.isVisible)
+    }
+
     private func worldSection(_ world: World) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("\(world.emoji) \(world.title)")
@@ -88,7 +137,7 @@ struct HomeView: View {
                 .accessibilityLabel(world.title)
                 .accessibilityAddTraits(.isHeader)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 280), spacing: 14)], spacing: 14) {
-                ForEach(world.games) { game in
+                ForEach(visibleGames(world)) { game in
                     GameTile(game: game, stars: progress.stars(for: game)) {
                         activeGame = game
                     }
@@ -140,15 +189,27 @@ struct GameContainer: View {
 
     var body: some View {
         Group {
-            if game.isMemory {
+            switch game.kind {
+            case .memory:
                 MemoryGameView(game: game, level: level, seed: seed, speaksIntro: session == 0,
                                onAgain: again, onClose: close)
-            } else {
+            case .shapes:
+                ShapeGameView(game: game, level: level, seed: seed, speaksIntro: session == 0,
+                              onAgain: again, onClose: close)
+            case .echo:
+                EchoGameView(game: game, level: level, seed: seed, speaksIntro: session == 0,
+                             onAgain: again, onClose: close)
+            case .quiz:
                 QuizGameView(game: game, level: level, seed: seed, speaksIntro: session == 0,
                              onAgain: again, onClose: close)
             }
         }
         .id(session)
+        .timeNotice()
+        .onAppear {
+            // The tone game is about listening, so the background music stays quiet there.
+            MusicPlayer.shared.setMood(game.kind == .echo ? .silent : .play)
+        }
     }
 
     private var level: Int {

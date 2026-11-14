@@ -2,7 +2,7 @@ import XCTest
 @testable import Lernwiese
 
 final class RoundFactoryTests: XCTestCase {
-    private let questionGames = GameID.allCases.filter { !$0.isMemory }
+    private let questionGames = GameID.allCases.filter { $0.kind == .quiz }
 
     private func rounds(_ game: GameID, level: Int, seed: UInt64) -> [Round] {
         var rng = SeededGenerator(seed: seed)

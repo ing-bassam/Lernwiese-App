@@ -4,6 +4,7 @@ enum World: String, CaseIterable, Identifiable {
     case numbers
     case animals
     case nature
+    case thinking
 
     var id: String { rawValue }
 
@@ -12,6 +13,7 @@ enum World: String, CaseIterable, Identifiable {
         case .numbers: return "Zahlen"
         case .animals: return "Tiere"
         case .nature: return "Natur"
+        case .thinking: return "Knobeln"
         }
     }
 
@@ -20,6 +22,7 @@ enum World: String, CaseIterable, Identifiable {
         case .numbers: return "🔢"
         case .animals: return "🐾"
         case .nature: return "🌻"
+        case .thinking: return "🧩"
         }
     }
 
@@ -39,6 +42,11 @@ enum GameID: String, CaseIterable, Identifiable {
     case weather
     case fruitVeg
     case growth
+    case shapes
+    case patterns
+    case shadows
+    case oddOne
+    case echo
 
     var id: String { rawValue }
 
@@ -54,6 +62,11 @@ enum GameID: String, CaseIterable, Identifiable {
         case .weather: return "Wetter"
         case .fruitVeg: return "Obst oder Gemüse"
         case .growth: return "Was kommt danach?"
+        case .shapes: return "Formen-Garten"
+        case .patterns: return "Muster legen"
+        case .shadows: return "Schatten-Rätsel"
+        case .oddOne: return "Was passt nicht?"
+        case .echo: return "Klang-Echo"
         }
     }
 
@@ -69,6 +82,11 @@ enum GameID: String, CaseIterable, Identifiable {
         case .weather: return "🌦️"
         case .fruitVeg: return "🍓"
         case .growth: return "🌱"
+        case .shapes: return "🔺"
+        case .patterns: return "🔁"
+        case .shadows: return "🌗"
+        case .oddOne: return "🤔"
+        case .echo: return "🎶"
         }
     }
 
@@ -77,6 +95,7 @@ enum GameID: String, CaseIterable, Identifiable {
         case .counting, .compare, .arithmetic: return .numbers
         case .habitat, .foodPairs, .babies: return .animals
         case .seasons, .weather, .fruitVeg, .growth: return .nature
+        case .shapes, .patterns, .shadows, .oddOne, .echo: return .thinking
         }
     }
 
@@ -92,6 +111,11 @@ enum GameID: String, CaseIterable, Identifiable {
         case .weather: return .teal
         case .fruitVeg: return .red
         case .growth: return .green
+        case .shapes: return .purple
+        case .patterns: return .blue
+        case .shadows: return .teal
+        case .oddOne: return .orange
+        case .echo: return .pink
         }
     }
 
@@ -108,9 +132,41 @@ enum GameID: String, CaseIterable, Identifiable {
         case .weather: return "Wetter. Was passt zu Regen, Sonne und Schnee?"
         case .fruitVeg: return "Obst oder Gemüse? Tippe auf die richtige Kiste."
         case .growth: return "Was kommt danach? So wächst und verändert sich die Natur."
+        case .shapes: return "Formen-Garten. Zieh jedes Ding in die Form, die passt."
+        case .patterns: return "Muster legen. Was kommt als Nächstes?"
+        case .shadows: return "Schatten-Rätsel. Wem gehört der Schatten?"
+        case .oddOne: return "Was passt nicht? Ein Bild gehört nicht dazu."
+        case .echo: return "Klang-Echo. Hör gut zu und spiel die Töne nach."
         }
     }
 
-    /// The pairs game has its own screen; all others are question rounds.
-    var isMemory: Bool { self == .foodPairs }
+    /// What the game trains, shown to parents.
+    var skill: String {
+        switch self {
+        case .counting, .compare, .arithmetic: return "Zahlen und Mengen"
+        case .habitat, .babies, .seasons, .weather, .fruitVeg: return "Wissen und Wortschatz"
+        case .foodPairs: return "Gedächtnis"
+        case .growth, .patterns: return "Reihenfolgen und Logik"
+        case .shapes: return "Formen und Feinmotorik"
+        case .shadows: return "Genaues Hinsehen"
+        case .oddOne: return "Oberbegriffe und Denken"
+        case .echo: return "Hören, Merken und Rhythmus"
+        }
+    }
+
+    enum Kind {
+        case quiz, memory, shapes, echo
+    }
+
+    var kind: Kind {
+        switch self {
+        case .foodPairs: return .memory
+        case .shapes: return .shapes
+        case .echo: return .echo
+        default: return .quiz
+        }
+    }
+
+    /// The pairs game has its own screen.
+    var isMemory: Bool { kind == .memory }
 }

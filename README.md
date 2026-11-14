@@ -1,8 +1,9 @@
 # Lernwiese – Lernspiele für Kinder (iPhone & iPad)
 
-Zehn kleine, eigene Lernspiele für Kinder von 4 bis 8 Jahren rund um Zahlen, Tiere und Natur. Alle Aufgaben
-werden mit der deutschen Systemstimme vorgelesen. Kein Zeitdruck, keine Strafen, Fortschritt mit Sternen.
-Keine Werbung, keine Käufe, keine Anmeldung, keine Datenerfassung, keine Netzwerkverbindung.
+Fünfzehn kleine, eigene Lernspiele für Kinder von 4 bis 8 Jahren mit dem Igel Pieks: Zahlen, Tiere, Natur und
+Knobeln. Alle Aufgaben werden mit der deutschen Systemstimme vorgelesen. Kein Zeitdruck, keine Strafen,
+Fortschritt mit Sternen, ruhige selbst komponierte Musik und eine Bildschirmzeit-Begrenzung für Eltern.
+Kostenlos: keine Werbung, keine Käufe, keine Anmeldung, keine Datenerfassung, keine Netzwerkverbindung.
 
 ## Spiele
 
@@ -18,6 +19,11 @@ Keine Werbung, keine Käufe, keine Anmeldung, keine Datenerfassung, keine Netzwe
 | Natur | Wetter | Zuordnen |
 | Natur | Obst oder Gemüse | Sortieren |
 | Natur | Was kommt danach? | Reihenfolgen |
+| Knobeln | Formen-Garten (Dinge in Umrisse ziehen) | Formen, Feinmotorik |
+| Knobeln | Muster legen | Logik |
+| Knobeln | Schatten-Rätsel | Visuelle Wahrnehmung |
+| Knobeln | Was passt nicht? | Oberbegriffe |
+| Knobeln | Klang-Echo (Töne nachspielen) | Hören, Merken |
 
 Jedes beendete Spiel gibt einen Stern (höchstens drei pro Spiel); die Sterne bestimmen die Schwierigkeit
 (Stufe 0 bis 2: mehr Antworten, größere Zahlen, mehr Paare).
@@ -32,7 +38,25 @@ Jedes beendete Spiel gibt einen Stern (höchstens drei pro Spiel); die Sterne be
 | Sterne, Einstellungen, Elternschranke | `Lernwiese/Models/` |
 | Vorlesen, Vibration | `Lernwiese/Services/` |
 | Oberfläche | `Lernwiese/Views/` |
+| Knobeln-Inhalte und -Aufgaben | `Lernwiese/Models/ThinkingContent.swift`, `RoundFactory+Thinking.swift`, `ShapeRound.swift` |
+| Musik (Noten) und Klangerzeugung | `Lernwiese/Models/Songs.swift`, `Synth.swift`, `Services/MusicPlayer.swift` |
+| Bildschirmzeit (Empfehlung, Zählung, Pause) | `Lernwiese/Models/ScreenTime.swift`, `Views/RestViews.swift` |
+| Igel Pieks | `Lernwiese/Views/Mascot.swift` |
 | Demo-Modus für Screenshots | `Lernwiese/Demo/DemoContent.swift` |
+
+## Musik
+
+Alle Melodien sind für Lernwiese geschrieben und stehen als Noten im Code (`Songs.swift`). `Synth.swift` macht
+daraus beim Start Klänge (Spieluhr, Marimba, weicher Bass) – keine Audiodateien, keine KI, keine Lizenzen
+Dritter. Bewusst ruhig: höchstens 80 Schläge pro Minute, kleiner Tonumfang, keine Fanfaren; beim Vorlesen wird
+die Musik leiser. Neue Melodie: eine `Track`-Zeile wie `"C5:1 E5:1 G5:2"` (Ton:Schläge, `r` = Pause) schreiben.
+
+## Bildschirmzeit
+
+Empfehlung nach der Leitlinie AWMF S2k 027-075 (2023): 3–6 Jahre höchstens 30 Minuten, 6–9 Jahre höchstens
+30–45 Minuten, nicht täglich und am besten gemeinsam; WHO (2019): 2–4 Jahre höchstens eine Stunde. Die App
+stellt das Tageslimit nach dem Alter ein (30 bzw. 45 Minuten, änderbar), warnt 5 Minuten vorher und zeigt dann
+einen Pausen-Bildschirm mit einer Idee ohne Bildschirm. Mehr Zeit nur hinter der Elternschranke.
 
 Alle Grafiken sind SwiftUI-Formen, SF Symbols oder Emoji; das App-Symbol zeichnet `scripts/make_icon.py`.
 Das Xcode-Projekt wird aus `project.yml` mit [XcodeGen](https://github.com/yonaskolb/XcodeGen) erzeugt.

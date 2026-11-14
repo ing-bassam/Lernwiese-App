@@ -19,7 +19,7 @@ final class ProgressStoreTests: XCTestCase {
     func testStartsEmptyAtTheEasiestLevel() {
         let store = ProgressStore(defaults: defaults)
         XCTAssertEqual(store.total, 0)
-        XCTAssertEqual(store.maximum, 30)
+        XCTAssertEqual(store.maximum, GameID.allCases.count * 3)
         for game in GameID.allCases {
             XCTAssertEqual(store.level(for: game), 0)
         }

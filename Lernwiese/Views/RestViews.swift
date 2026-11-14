@@ -25,25 +25,35 @@ struct TimeNoticeModifier: ViewModifier {
     @State private var visibleMinutes: Int?
 
     func body(content: Content) -> some View {
-        content
-            .overlay(alignment: .top) {
-                if let visibleMinutes {
-                    TimeNoticeBanner(minutesLeft: visibleMinutes)
-                        .padding(.top, 70)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .onTapGesture { hide() }
-                }
-            }
-            .onChange(of: playTime.status(settings: settings)) { status in
-                guard case .almost(let minutes) = status else { return }
-                let key = playTime.dayKey(Date()) + "-\(settings.dailyLimitMinutes ?? 0)-\(playTime.todayExtraMinutes)"
-                guard shownFor != key else { return }
-                shownFor = key
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) { visibleMinutes = minutes }
-                Speaker.shared.say("Noch \(minutes == 1 ? "eine Minute" : "\(minutes) Minuten"), dann machen wir eine Pause.",
-                                   interrupt: false)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 9) { hide() }
-            }
+        ZStack(alignment: .top) {
+            content
+            banner
+        }
+        .onChange(of: playTime.status(settings: settings)) { status in
+            statusChanged(status)
+        }
+    }
+
+    @ViewBuilder
+    private var banner: some View {
+        if let minutes = visibleMinutes {
+            TimeNoticeBanner(minutesLeft: minutes)
+                .padding(.top, 70)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onTapGesture { hide() }
+        }
+    }
+
+    private func statusChanged(_ status: ScreenTime.Status) {
+        guard case .almost(let minutes) = status else { return }
+        let limit = settings.dailyLimitMinutes ?? 0
+        let key = playTime.dayKey(Date()) + "-\(limit)-\(playTime.todayExtraMinutes)"
+        guard shownFor != key else { return }
+        shownFor = key
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) { visibleMinutes = minutes }
+        let spoken = minutes == 1 ? "eine Minute" : "\(minutes) Minuten"
+        Speaker.shared.say("Noch \(spoken), dann machen wir eine Pause.", interrupt: false)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 9) { hide() }
     }
 
     private func hide() {

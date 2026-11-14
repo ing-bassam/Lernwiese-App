@@ -36,9 +36,9 @@ shoot() {
   xcrun simctl launch "$UDID" "$BUNDLE_ID" -demo YES -AppleLanguages "(de)" -AppleLocale de_DE "$@"
   sleep 12
   xcrun simctl io "$UDID" screenshot "$file"
-  # A plain launch screen compresses to ~130 KB, a real screen to well over 500 KB: wait and retake.
+  # A plain launch screen compresses to ~130 KB, a real screen to well over 300 KB: wait and retake.
   local attempt=1
-  while [ "$(stat -f%z "$file")" -lt 400000 ]; do
+  while [ "$(stat -f%z "$file")" -lt 250000 ]; do
     if [ "$attempt" -ge 5 ]; then
       echo "::error::Screenshot $name zeigt nur den Startbildschirm"
       exit 1

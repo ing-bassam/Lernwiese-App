@@ -90,6 +90,8 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Lernwiese")
                     .font(.rounded(42, .heavy))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                     .foregroundColor(Palette.ink)
                     .accessibilityAddTraits(.isHeader)
                 HStack(spacing: 6) {
